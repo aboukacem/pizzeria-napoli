@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Napoli Bestel App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+
+    <!-- App Header -->
+    <header class="bg-red-600 text-white shadow-lg sticky top-0 z-50 px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <i class="fa-solid : fa-pizza-slice text-2xl animate-bounce"></i>
+            <h1 class="text-xl font-black tracking-wide">NAPOLI APP</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="text-sm font-medium bg-red-700 px-3 py-1 rounded-full text-yellow-300">
+                <i class="fa-solid : fa-phone"></i> 0599 201 165
+            </span>
+        </div>
+    </header>
+
+    <!-- Main App Container -->
+    <main class="container mx-auto max-w-6xl p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Menu Left Side -->
+        <div class="lg:col-span-2">
+            <h2 class="text-2xl font-bold mb-4 text-gray-900 border-b-2 border-red-500 pb-1">Onze Menukaart</h2>
+            <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- Checkout & Cart Right Side -->
+        <div class="lg:col-span-1">
+            <div class="bg-white p-5 rounded-xl shadow-md border border-gray-200 sticky top-20">
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fa-solid : fa-shopping-cart text-red-500"></i> Uw Winkelwagen</h3>
+                
+                <div id="cart-items" class="space-y-3 max-h-60 overflow-y-auto mb-4">
+                    <p class="text-gray-400 text-center py-6 text-sm">Voeg heerlijke gerechten toe.</p>
+                </div>
+
+                <div class="border-t pt-3 mb-4 font-bold text-lg flex justify-between">
+                    <span>Totaal:</span>
+                    <span id="cart-total" class="text-red-600">€ 0,00</span>
+                </div>
+
+                <!-- Formulaire Client Intégré -->
+                <div class="bg-gray-50 p-3 rounded-lg mb-4 space-y-2 text-sm border">
+                    <h4 class="font-bold text-gray-700 mb-1"><i class="fa-solid : fa-user"></i> Klantgegevens</h4>
+                    <input type="text" id="cust-name" placeholder="Uw Naam *" class="w-full p-2 border rounded focus:ring-1 focus:ring-red-500 outline-none" required>
+                    <input type="tel" id="cust-phone" placeholder="Telefoonnummer *" class="w-full p-2 border rounded focus:ring-1 focus:ring-red-500 outline-none" required>
+                    <input type="text" id="cust-address" placeholder="Adres (leeglaten voor afhalen)" class="w-full p-2 border rounded focus:ring-1 focus:ring-red-500 outline-none">
+                </div>
+
+                <button onclick="submitOrder()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition shadow flex items-center justify-center gap-2">
+                    <i class="fa-solid : fa-paper-plane"></i> Bestelling Direct Verzenden
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- App System Logic JavaScript -->
+    <script>
+        // Menu complet intégré directement dans l'interface pour éviter tout blocage de chargement
+        const menuItems = [
+            // Voorgerechten
+            { id: 1, category: "voorgerechten", name: "Pane e Burro", desc: "Pain italien frais avec beurre à l'ail", price: 7.50 },
+            { id: 2, category: "voorgerechten", name: "Pain italien avec fromage", desc: "Pain italien cuit au four et nappé de fromage fondu", price: 7.50 },
+            { id: 3, category: "voorgerechten", name: "Salade de thon", desc: "Salade fraîche accompagnée de thon et condiments", price: 9.00 },
+            { id: 4, category: "voorgerechten", name: "Pane e Pesto", desc: "Pain italien avec pesto, tomates cerises, mozzarella et basilicum", price: 9.50 },
+            { id: 5, category: "voorgerechten", name: "Bruschette al Pomodoro", desc: "Morceaux de pain croustillants avec tomate, oignon, sauce basilic et olives", price: 9.50 },
+            { id: 6, category: "voorgerechten", name: "Funghi al Burro", desc: "Champignons sautés, sauce crème et pain", price: 10.00 },
+            { id: 7, category: "voorgerechten", name: "Carpaccio", desc: "Fines tranches de filet de bœuf mariné", price: 13.00 },
+            
+            // Klassieke Pizza's
+            { id: 8, category: "klassieke-pizzas", name: "Pizza Margherita", desc: "Tomates et fromage", price: 10.00 },
+            { id: 9, category: "klassieke-pizzas", name: "Pizza Funghi", desc: "Tomates, fromage et champignons", price: 11.00 },
+            { id: 10, category: "klassieke-pizzas", name: "Pizza Jambon", desc: "Tomates, fromage et jambon", price: 11.50 },
+            { id: 11, category: "klassieke-pizzas", name: "Pizza Salami", desc: "Tomates, fromage et salami", price: 11.50 },
+            { id: 12, category: "klassieke-pizzas", name: "Pizza Hawaïenne", desc: "Tomates, fromage, jambon et ananas", price: 12.00 },
+            { id: 13, category: "klassieke-pizzas", name: "Pizza Peperone", desc: "Tomates, fromage, champignons, poivrons, oignons, piments et salami", price: 15.50 },
+            { id: 14, category: "klassieke-pizzas", name: "Pizza Vesuvio", desc: "Tomates, fromage, champignons et salami", price: 12.50 },
+            { id: 15, category: "klassieke-pizzas", name: "Pizza Mozzarella", desc: "Tomates, fromage, tomate fraîche, mozzarella et basilic", price: 15.50 },
+            { id: 16, category: "klassieke-pizzas", name: "Pizza Quattro Formaggi", desc: "Tomates, fromage, gorgonzola, mozzarella et parmesan", price: 14.50 },
+            { id: 17, category: "klassieke-pizzas", name: "Pizza Quattro Stagioni", desc: "Tomates, fromage, jambon, salami, champignons, poivron et oignon", price: 15.00 },
+
+            // Populaire Pizza's
+            { id: 18, category: "populaire-pizzas", name: "Pizza Carbonara", desc: "Tomates, fromage, jambon, salami, bacon et oignon", price: 13.50 },
+            { id: 19, category: "populaire-pizzas", name: "Pizza Carbonara Speciale", desc: "Tomates, fromage, jambon, salami, bacon, œuf au plat et oignon", price: 14.50 },
+            { id: 20, category: "populaire-pizzas", name: "Pizza Al Bolognese", desc: "Tomates, fromage, sauce bolognaise et parmesan", price: 13.00 },
+            { id: 21, category: "populaire-pizzas", name: "Pizza al Spinaci", desc: "Tomates, fromage, épinards et oignon", price: 13.00 },
+            { id: 22, category: "populaire-pizzas", name: "Pizza Poulet Brocoli", desc: "Tomates, fromage, brocoli, oignon et poulet", price: 16.00 },
+            { id: 23, category: "populaire-pizzas", name: "Pizza Vegetariana", desc: "Tomates, fromage, champignons, artichauts, tomates séchées, poivron, oignon, asperges, olives et ail frais", price: 14.50 },
+            { id: 24, category: "populaire-pizzas", name: "Pizza al Gorgonzola", desc: "Tomates, fromage, gorgonzola et ail frais", price: 15.00 },
+            { id: 25, category: "populaire-pizzas", name: "Pizza Shawarma", desc: "Tomates, fromage et shawarma", price: 15.00 },
+            { id: 26, category: "populaire-pizzas", name: "Pizza Shawarma Special", desc: "Tomates, fromage, shawarma, poivron, oignon et champignons", price: 15.00 },
+            { id: 27, category: "populaire-pizzas", name: "Pizza Émincé de Poulet", desc: "Tomates, fromage et morceaux de filet de poulet", price: 15.00 },
+            { id: 28, category: "populaire-pizzas", name: "Pizza Kebab (Poulet ou Veau)", desc: "Tomates, fromage, kebab de poulet ou de veau grillé", price: 15.00 },
+            { id: 29, category: "populaire-pizzas", name: "Pizza Kapsalon", desc: "Tomates, fromage, frites et salade", price: 15.00 },
+            { id: 30, category: "populaire-pizzas", name: "Pizza Gyros", desc: "Tomates, fromage, gyros, oignons et ail frais", price: 15.00 },
+            { id: 31, category: "populaire-pizzas", name: "Pizza Kipsete", desc: "Tomates, fromage et saté de poulet", price: 15.00 },
+            { id: 32, category: "populaire-pizzas", name: "Pizza Pizzaiolo", desc: "Tomates, fromage, champignons, rucola, sauce parmesan et ail frais", price: 14.00 },
+            { id: 33, category: "populaire-pizzas", name: "Pizza Filethaas", desc: "Tomates, fromage, morceaux de filet de porc, sauce parmesan et ail", price: 16.00 },
+            { id: 34, category: "populaire-pizzas", name: "Pizza Varkenshaas (Spécialité)", desc: "Tomates, fromage, filet de porc, champignons et sauce crème", price: 14.00 },
+
+            // Onze Specials
+            { id: 35, category: "specials", name: "Pizza au filet de bœuf", desc: "Tomates, fromage, filet de bœuf, oignon rouge, poivron, tomate et parmesan", price: 16.00 },
+            { id: 36, category: "specials", name: "Pizza Carpaccio", desc: "Tomates, fromage, fines tranches de filet de bœuf, rucola et parmesan", price: 16.50 },
+            { id: 37, category: "specials", name: "Pizza Napolitano", desc: "Tomates, fromage, salami, jambon, poivron, oignon, mozzarella et champignons", price: 15.00 },
+            { id: 38, category: "specials", name: "Pizza Paesana Speciaal", desc: "Tomates, fromage, champignons, jambon, salami, bacon, oignon et mozzarella", price: 14.50 },
+            { id: 39, category: "specials", name: "Pizza Dinamite", desc: "Tomates, fromage, salami, bacon, oignon, poivron, mozzarella et piments", price: 14.50 },
+            { id: 40, category: "specials", name: "Pizza Oma", desc: "Tomates, fromage, anchois, thon, poivron, oignon et champignons", price: 16.00 },
+            { id: 41, category: "specials", name: "Pizza Freek", desc: "Tomates, fromage, shawarma, kebab de poulet et kebab de veau", price: 16.00 },
+            { id: 42, category: "specials", name: "Pizza Sucuk", desc: "Tomates, fromage et saucisse turque épicée", price: 13.00 },
+            { id: 43, category: "specials", name: "Fantasie van de klant", desc: "Composez vous-même votre pizza avec vos ingrédients préférés", price: 16.00 },
+
+            // Vis Pizza's
+            { id: 44, category: "vis-pizzas", name: "Pizza Frutti di Mare", desc: "Tomates, fromage et assortiment de fruits de mer", price: 15.50 },
+            { id: 45, category: "vis-pizzas", name: "Pizza au saumon", desc: "Tomates, fromage et morceaux de saumon tendre", price: 15.00 },
+            { id: 46, category: "vis-pizzas", name: "Pizza Marinara", desc: "Tomates, fromage, oignon, thon, anchois et saumon", price: 13.00 },
+            { id: 47, category: "vis-pizzas", name: "Pizza au thon", desc: "Tomates, fromage, oignon et thon", price: 13.00 },
+
+            // Pasta's
+            { id: 48, category: "pastas", name: "Pâtes Aglio Olio", desc: "Avec (beaucoup d') ail, poivrons, piments, persil et huile d'olive", price: 11.50 },
+            { id: 49, category: "pastas", name: "Pâtes Bolognese", desc: "Avec de la viande de bœuf hachée assaisonnée et sauce tomate", price: 13.00 },
+            { id: 50, category: "pastas", name: "Pâtes Carbonara", desc: "Avec du bacon, du parmesan, des oignons et une sauce à la crème", price: 13.00 },
+            { id: 51, category: "pastas", name: "Pâtes Vegetariana", desc: "Avec divers légumes frais, sauce tomate piquante et parmesan", price: 13.50 },
+            { id: 52, category: "pastas", name: "Pâtes Quattro Formaggi", desc: "Avec quatre types de fromages fondus et sauce crème", price: 13.50 },
+            { id: 53, category: "pastas", name: "Pâtes Marinara", desc: "Avec moules, crevettes, calamar et sauce tomate savoureuse", price: 15.50 },
+            { id: 54, category: "pastas", name: "Pâtes Spinaci", desc: "Aux épinards frais, bacon, fromage et sauce à la crème", price: 13.50 },
+            { id: 55, category: "pastas", name: "Pâtes Pollo", desc: "Avec morceaux de filet de poulet, légumes variés, pesto et crème", price: 16.00 },
+            { id: 56, category: "pastas", name: "Pâtes Carbonara Speciale", desc: "Sauce tomate, fromage, bacon, jambon, salami, œuf au plat et oignon", price: 15.00 },
+            { id: 57, category: "pastas", name: "Pâtes Poulet et Brocoli", desc: "Sauce tomate, filet de poulet, brocoli et parmesan râpé", price: 15.00 },
+
+            // Kapsalons
+            { id: 58, category: "kapsalon", name: "Kapsalon (Veau, Poulet Doner ou Shawarma)", desc: "Avec frites, viande au choix, fromage et salade", price: 11.50 },
+            { id: 59, category: "kapsalon", name: "Rotterdam Kapsalon", desc: "La recette authentique et généreuse style Rotterdam", price: 12.50 },
+            { id: 60, category: "kapsalon", name: "Kapsalon Mix Groot", desc: "Grand plateau avec un mélange de plusieurs viandes grillées", price: 15.00 },
+            { id: 61, category: "kapsalon", name: "Kapsalon Spareribs", desc: "Frites, viande de spareribs désossée et fondante, fromage et salade", price: 18.00 },
+            { id: 62, category: "kapsalon", name: "Kapsalon Rotterdam Groot", desc: "Format géant du Kapsalon Rotterdam", price: 16.00 },
+            { id: 63, category: "kapsalon", name: "Kapsalon Kipfilet", desc: "Avec des morceaux de filet de poulet marinés et grillés", price: 13.50 },
+            { id: 64, category: "kapsalon", name: "Kapsalon Frikandel", desc: "Variante originale de kapsalon accompagnée de morceaux de frikandel", price: 11.50 },
+            { id: 65, category: "kapsalon", name: "Kapsalon Crispy", desc: "Composé de tenders de poulet extra croustillants", price: 15.50 },
+
+            // Broodjes & Lahmacun
+            { id: 66, category: "sandwiches", name: "Sandwich (Veau, Poulet Döner ou Shawarma)", desc: "Pain pita ou sandwich garni avec la viande de votre choix", price: 9.50 },
+            { id: 67, category: "sandwiches", name: "Tosti Turc", desc: "Pain croustillant pressé avec du fromage et de la saucisse turque sucuk", price: 10.00 },
+            { id: 68, category: "sandwiches", name: "Dürüm (Döner, Poulet Döner ou Falafel)", desc: "Galette roulée garnie avec viande ou falafels végétariens", price: 9.50 },
+            { id: 69, category: "sandwiches", name: "Lahmacun (Shawarma, Poulet ou Döner de Veau)", desc: "Pizza turque fine enroulée autour d'une viande au choix", price: 12.00 },
+
+            // Schotels
+            { id: 70, category: "schotels", name: "Assiette de travers de porc (veau, sucrés ou au miel)", desc: "Côtes levées tendres avec accompagnements au choix", price: 24.00 },
+            { id: 71, category: "schotels", name: "Assiette Shawarma, Veau ou Poulet Döner", desc: "Servie généreusement avec frites, salade fraîche et sauces", price: 15.00 },
+            { id: 72, category: "schotels", name: "Assiette Shawarma Spécial (Veau ou Poulet)", desc: "Garnie de poivrons, oignons et champignons sautés", price: 15.00 },
+            { id: 73, category: "schotels", name: "Assiette Shawarma Hawaï", desc: "Accompagnée de morceaux d'ananas juteux et fromage fondu", price: 15.00 },
+            { id: 74, category: "schotels", name: "Assiette Shawarma Mariné Spécial", desc: "Viande de shawarma avec une marinade maison renforcée", price: 17.00 },
+            { id: 75, category: "schotels", name: "Assiette Lahmacun", desc: "Assiette complète de pizza turque avec viande (veau, poulet ou shawarma)", price: 15.00 },
+            { id: 76, category: "schotels", name: "Assiette Döner Hawaï", desc: "Döner classique sur assiette avec ananas et fromage", price: 16.00 },
+            { id: 77, category: "schotels", name: "Assiette Poulet Döner Hawaï", desc: "Döner de poulet combiné avec éclats d'ananas", price: 16.00 },
+            { id: 78, category: "schotels", name: "Assiette Escalope de Poulet", desc: "Morceaux de filet de poulet grillés à la plaque", price: 18.50 },
+            { id: 79, category: "schotels", name: "Assiette Poulet Spécial", desc: "Filet de poulet sauté aux champignons, poivrons et oignons", price: 18.50 },
+            { id: 80, category: "schotels", name: "Assiette Poulet Sauce Crème", desc: "Poulet tendre nappé d'une onctueuse sauce crème maison", price: 18.50 },
+            { id: 81, category: "schotels", name: "Assiette Poulet Mariné Spécial", desc: "Blancs de poulet longuement marinés dans des épices fines", price: 17.00 },
+            { id: 82, category: "schotels", name: "Assiette Brochettes Saté Poulet", desc: "Brochettes de poulet nappées de sauce cacahuète saté", price: 15.50 },
+            { id: 83, category: "schotels", name: "Assiette Steak de Hamburger Grillé", desc: "Steaks de bœuf hachés saisis au gril", price: 12.50 },
+            { id: 84, category: "schotels", name: "Assiette Kofta Spécial", desc: "Boulettes de viande hachée hautement assaisonnées selon la tradition", price: 15.50 },
+            { id: 85, category: "schotels", name: "Assiette Filet de Bœuf Sauce Crème", desc: "Filet de bœuf de qualité supérieure, sauce crémeuse", price: 27.00 },
+            { id: 86, category: "schotels", name: "Assiette Filet de Porc Sauce Crème", desc: "Filet de porc tendre aux champignons et crème", price: 22.50 },
+            { id: 87, category: "schotels", name: "Assiette Steak Biefstuk", desc: "Pièce de bœuf classique cuite selon vos goûts", price: 22.00 },
+            { id: 88, category: "schotels", name: "Assiette Saumon Sauce Crème", desc: "Pavé de saumon rôti servi avec une sauce veloutée", price: 22.00 },
+            { id: 89, category: "schotels", name: "Assiette Adana Kebab", desc: "Brochette de viande hachée de bœuf et d'agneau pimentée", price: 28.00 },
+            { id: 90, category: "schotels", name: "Assiette Spareribs de Veau", desc: "Portion généreuse de travers de veau grillés au feu de bois", price: 27.00 },
+            { id: 91, category: "schotels", name: "Assiette Shawarma d'Agneau", desc: "Émincé de viande d'agneau tendre et savoureuse", price: 16.00 },
+
+            // Mixed Grill & Kip
+            { id: 92, category: "mixed-grill", name: "Grillades mixtes (1 personne)", desc: "Assortiment de différents types de viandes grillées", price: 20.00 },
+            { id: 93, category: "mixed-grill", name: "Mixed Grill (2 personnes)", desc: "Grand plateau de fête avec un assortiment complet de viandes grillées", price: 25.00 },
+            { id: 94, category: "mixed-grill", name: "Demi-poulet et frites", desc: "Demi-poulet rôti à la peau croustillante avec frites", price: 12.00 },
+            { id: 95, category: "mixed-grill", name: "Aiguillettes de poulet et frites", desc: "Tenders de poulet panés croustillants et frites", price: 15.00 },
+            { id: 96, category: "mixed-grill", name: "Burger de poulet et frites", desc: "Sandwich burger au poulet croustillant et frites", price: 10.00 },
+            { id: 97, category: "mixed-grill", name: "Hot wings et frites", desc: "Ailes de poulet épicées et frites goudgele", price: 10.00 }
+        ];
+
+        let cart = [];
+
+        // Générer le menu à l'écran instantanément
+        function buildMenu() {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = '';
+            
+            menuItems.forEach(item => {
+                grid.innerHTML += `
+                    <div class="bg-white p-4 rounded-xl border shadow-sm flex flex-col justify-between hover:scale-[1.01] transition">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-gray-900">${item.id}. ${item.name}</h4>
+                                <span class="text-red-600 font-bold">€ ${item.price.toFixed(2).replace('.',',')}</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">${item.desc}</p>
+                        </div>
+                        <button onclick="addToCart(${item.id})" class="mt-4 bg-gray-900 hover:bg-red-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition">
+                            + Toevoegen
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        function addToCart(id) {
+            const product = menuItems.find(p => p.id === id);
+            const exist = cart.find(item => item.id === id);
+            if(exist) { exist.quantity += 1; } 
+            else { cart.push({ ...product, quantity: 1 }); }
+            updateCart();
+        }
+
+        function changeQty(id, delta) {
+            const item = cart.find(p => p.id === id);
+            if(item) {
+                item.quantity += delta;
+                if(item.quantity <= 0) cart = cart.filter(p => p.id !== id);
+                updateCart();
+            }
+        }
+
+        function updateCart() {
+            const container = document.getElementById('cart-items');
+            container.innerHTML = '';
+            let total = 0;
+
+            if(cart.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-6 text-sm">Uw winkelwagen is leeg.</p>';
+                document.getElementById('cart-total').innerText = "€ 0,00";
+                return;
+            }
+
+            cart.forEach(item => {
+                total += item.price * item.quantity;
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded border text-sm">
+                        <div class="max-w-[60%]">
+                            <h5 class="font-bold text-gray-800 truncate">${item.name}</h5>
+                            <span class="text-xs text-gray-500">€ ${item.price.toFixed(2).replace('.',',')}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 bg-gray-200 rounded font-bold text-xs hover:bg-gray-300">-</button>
+                            <span class="font-bold text-sm">${item.quantity}</span>
+                            <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 bg-gray-200 rounded font-bold text-xs hover:bg-gray-300">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('cart-total').innerText = `€ ${total.toFixed(2).replace('.', ',')}`;
+        }
+
+        // Action de commande directe via WhatsApp
+        function submitOrder() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const address = document.getElementById('cust-address').value.trim();
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            if(!name || !phone) {
+                alert("Vul alstublieft uw naam en telefoonnummer in.");
+                return;
+            }
+            if(cart.length === 0) {
+                alert("Uw winkelwagen is leeg.");
+                return;
+            }
+
+            // Génération du texte WhatsApp
+            let whatsappText = `*🚨 NIEUWE BESTELLING NAPOLI*\n\n`;
+            whatsappText += `👤 *Klant:* ${name}\n`;
+            whatsappText += `📞 *Telefoon:* ${phone}\n`;
+            whatsappText += `📍 *Type:* ${address ? 'Bezorgen (' + address + ')' : 'Afhalen in restaurant'}\n\n`;
+            whatsappText += `🛒 *Gerechten:*\n`;
+            
+            cart.forEach(item => {
+                whatsappText += `• ${item.quantity}x ${item.name} (€ ${(item.price * item.quantity).toFixed(2).replace('.', ',')})\n`;
+            });
+            
+            whatsappText += `\n💰 *Totaal te betalen:* € ${total.toFixed(2).replace('.', ',')}`;
+
+            const pizzeriaWhatsAppNumber = "31599201165"; 
+            const encodedText = encodeURIComponent(whatsappText);
+            const whatsappUrl = `https://wa.me/${pizzeriaWhatsAppNumber}?text=${encodedText}`;
+            
+            alert(`🎉 Succes!\n\nWe openen nu WhatsApp zodat u uw bestelling met één klik kunt verzenden naar Napoli!`);
+            window.open(whatsappUrl, '_blank');
+
+            // Réinitialisation
+            cart = [];
+            updateCart();
+            document.getElementById('cust-name').value = '';
+            document.getElementById('cust-phone').value = '';
+            document.getElementById('cust-address').value = '';
+        }
+
+        // Lancement au chargement de la page
+        window.onload = buildMenu;
+    </script>
+</body>
+</html>
